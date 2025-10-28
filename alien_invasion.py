@@ -23,6 +23,7 @@ class AlienInvasion:
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
+        self.stars = pygame.sprite.Group()
         self._create_fleet()
 
     def run_game(self):
@@ -36,11 +37,33 @@ class AlienInvasion:
     #Helper Methods
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
+        self._add_stars()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
-        self.aliens.draw(self.screen)        
+        self.aliens.draw(self.screen)
         self.ship.blitme()
         pygame.display.flip()
+
+    def _add_stars(self):
+        star_image = pygame.image.load('images/starBig.bmp')
+        star_rect = star_image.get_rect()
+        star_x = star_rect.width
+        star_y = star_rect.height
+        star_width, star_height = star_rect.size
+        current_x, current_y = star_width, star_height
+
+        while current_y < self.settings.screen_height:
+            while current_x < self.settings.screen_width:
+                new_star = {
+                    'img': pygame.image.load('images/starBig.bmp'),
+                    'rect': star_image.get_rect(),
+                }
+                self.stars.add(new_star)
+                current_x += star_width
+            current_x = star_width
+            current_y += 2 * star_height
+
+        self.stars.draw(self.screen)
 
     def _check_events(self):
         for event in pygame.event.get():
