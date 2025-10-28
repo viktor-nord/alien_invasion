@@ -18,7 +18,7 @@ class AlienInvasion:
         self.screen = pygame.display.set_mode(wh, f)
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
-        pygame.display.set_caption('Alien Invasion')
+        pygame.display.set_caption('Vertical Alien Invasion')
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
 
