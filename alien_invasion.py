@@ -3,6 +3,7 @@ import pygame
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from alien import Alien
 
 class AlienInvasion:
     def __init__(self):
@@ -21,6 +22,8 @@ class AlienInvasion:
         pygame.display.set_caption('Alien Invasion')
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+        self._create_fleet()
 
     def run_game(self):
         while True:
@@ -31,6 +34,14 @@ class AlienInvasion:
             self.clock.tick(60)
 
     #Helper Methods
+    def _update_screen(self):
+        self.screen.fill(self.settings.bg_color)
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
+        self.aliens.draw(self.screen)        
+        self.ship.blitme()
+        pygame.display.flip()
+
     def _check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -41,13 +52,6 @@ class AlienInvasion:
             elif event.type == pygame.KEYUP:
                 self._check_key_events(event.key, False)
                  
-    def _update_screen(self):
-        self.screen.fill(self.settings.bg_color)
-        for bullet in self.bullets.sprites():
-            bullet.draw_bullet()
-        self.ship.blitme()
-        pygame.display.flip()
-
     # Modified
     def _check_key_events(self, key, is_key_down):
         if key == pygame.K_RIGHT:
@@ -70,6 +74,25 @@ class AlienInvasion:
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
+
+    def _create_fleet(self):
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        fleet_width, fleet_height = alien_width, alien_height
+        while fleet_height < (self.settings.screen_height - 3 * alien_height):
+            while fleet_width < (self.settings.screen_width - 2 * alien_width):
+                self._create_alien(fleet_width, fleet_height)
+                fleet_width += 2 * alien_width
+            fleet_width = alien_width
+            fleet_height +=2 * alien_height
+
+    def _create_alien(self, x, y):
+        new_alien = Alien(self)
+        new_alien.x = x
+        new_alien.rect.x = x
+        new_alien.rect.y = y
+        self.aliens.add(new_alien)
+        
 
 
 
