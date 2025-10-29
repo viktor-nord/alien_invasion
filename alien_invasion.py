@@ -28,6 +28,7 @@ class AlienInvasion:
         self.aliens = pygame.sprite.Group()
         self.stars = pygame.sprite.Group()
         self._create_fleet()
+        
 
     def run_game(self):
         while True:
@@ -89,6 +90,16 @@ class AlienInvasion:
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
+        self._check_bullet_alien_collision()
+
+    def _check_bullet_alien_collision(self):
+        collisions = pygame.sprite.groupcollide(
+            self.bullets, self.aliens, self.settings.not_super_bullet, True
+        )
+        if not self.aliens:
+            self.bullets.empty()
+            self._create_fleet()
+
 
     def _generate_star_pattern(self):
         pattern = []
