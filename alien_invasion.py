@@ -1,5 +1,7 @@
 import sys
 import pygame
+from random import randint, choice
+
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
@@ -20,6 +22,7 @@ class AlienInvasion:
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption('Alien Invasion')
+        self.star_pattern = self._generate_star_pattern()
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
@@ -44,26 +47,31 @@ class AlienInvasion:
         self.ship.blitme()
         pygame.display.flip()
 
-    def _add_stars(self):
+    def _generate_star_pattern(self):
+        pattern = []
         star_image = pygame.image.load('images/starBig.bmp')
+        DIMENSIONS = 100
+        x_count = 0
+        y_count = 0
         star_rect = star_image.get_rect()
-        star_x = star_rect.width
-        star_y = star_rect.height
-        star_width, star_height = star_rect.size
-        current_x, current_y = star_width, star_height
-
-        while current_y < self.settings.screen_height:
-            while current_x < self.settings.screen_width:
-                new_star = {
-                    'img': pygame.image.load('images/starBig.bmp'),
-                    'rect': star_image.get_rect(),
+        while y_count < self.settings.screen_height:
+            while x_count < self.settings.screen_width:
+                star = {
+                    'img': choice(['images/starBig.bmp', 'images/starSmall.bmp']), 
+                    'x': randint(x_count, x_count + DIMENSIONS - star_rect.width),
+                    'y': randint(y_count, y_count + DIMENSIONS - star_rect.height)
                 }
-                self.stars.add(new_star)
-                current_x += star_width
-            current_x = star_width
-            current_y += 2 * star_height
+                pattern.append(star)
+                x_count += DIMENSIONS
+            y_count += DIMENSIONS
+            x_count = 0
+        return pattern
 
-        self.stars.draw(self.screen)
+
+    def _add_stars(self):
+        for star in self.star_pattern:
+            img = pygame.image.load(star['img'])
+            self.screen.blit(img, (star['x'], star['y']))        
 
     def _check_events(self):
         for event in pygame.event.get():
