@@ -34,6 +34,7 @@ class AlienInvasion:
             self._check_events()
             self.ship.update()
             self._update_bullets()
+            self._update_aliens()
             self._update_screen()
             self.clock.tick(60)
 
@@ -47,31 +48,20 @@ class AlienInvasion:
         self.ship.blitme()
         pygame.display.flip()
 
-    def _generate_star_pattern(self):
-        pattern = []
-        star_image = pygame.image.load('images/starBig.bmp')
-        DIMENSIONS = 100
-        x_count = 0
-        y_count = 0
-        star_rect = star_image.get_rect()
-        while y_count < self.settings.screen_height:
-            while x_count < self.settings.screen_width:
-                star = {
-                    'img': choice(['images/starBig.bmp', 'images/starSmall.bmp']), 
-                    'x': randint(x_count, x_count + DIMENSIONS - star_rect.width),
-                    'y': randint(y_count, y_count + DIMENSIONS - star_rect.height)
-                }
-                pattern.append(star)
-                x_count += DIMENSIONS
-            y_count += DIMENSIONS
-            x_count = 0
-        return pattern
+    def _update_aliens(self):
+        self._check_fleet_edges()
+        self.aliens.update()
 
+    def _check_fleet_edges(self):
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_dir()
+                break
 
-    def _add_stars(self):
-        for star in self.star_pattern:
-            img = pygame.image.load(star['img'])
-            self.screen.blit(img, (star['x'], star['y']))        
+    def _change_fleet_dir(self):
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_dir *= -1
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -100,6 +90,29 @@ class AlienInvasion:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
 
+    def _generate_star_pattern(self):
+        pattern = []
+        MARGIN = 100
+        star_image = pygame.image.load('images/starBig.bmp')
+        # star_image.get_rect() = (0, 0, 23, 21)
+        x_count, y_count, width, height = star_image.get_rect()
+        while y_count < self.settings.screen_height:
+            while x_count < self.settings.screen_width:
+                star = {
+                    'img': choice(['images/starBig.bmp', 'images/starSmall.bmp']), 
+                    'x': randint(x_count, x_count + MARGIN - width),
+                    'y': randint(y_count, y_count + MARGIN - height)
+                }
+                pattern.append(star)
+                x_count += MARGIN
+            y_count += MARGIN
+            x_count = 0
+        return pattern
+
+    def _add_stars(self):
+        for star in self.star_pattern:
+            img = pygame.image.load(star['img'])
+            self.screen.blit(img, (star['x'], star['y']))
 
     def _fire_bullet(self):
         if len(self.bullets) < self.settings.bullets_allowed:
