@@ -9,6 +9,7 @@ from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
 from button import Button
+from scoreboard import Scoreboard
 
 class AlienInvasion:
     def __init__(self):
@@ -33,7 +34,10 @@ class AlienInvasion:
         self.aliens = pygame.sprite.Group()
         self.stars = pygame.sprite.Group()
         self._create_fleet()
-        self.play_button = Button(self, "Play")
+        self.play_button = Button(self, "Play", 0)
+        self.play_button_level_2 = Button(self, "Play Level 2", 1)
+        self.play_button_level_3 = Button(self, "Play Level 3", 2)
+        self.sb = Scoreboard(self)
         
 
     def run_game(self):
@@ -54,8 +58,11 @@ class AlienInvasion:
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
         self.ship.blitme()
+        self.sb.show_score()
         if not self.game_active:
             self.play_button.draw_button()
+            self.play_button_level_2.draw_button()
+            self.play_button_level_3.draw_button()
         pygame.display.flip()
 
     def _update_aliens(self):
@@ -111,8 +118,17 @@ class AlienInvasion:
                 self._check_play_button(mouse_pos)
     
     def _check_play_button(self, mouse_pos):
-        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        lev = 1
+        level_1 = self.play_button.rect.collidepoint(mouse_pos)
+        level_2 = self.play_button_level_2.rect.collidepoint(mouse_pos)
+        level_3 = self.play_button_level_3.rect.collidepoint(mouse_pos)
+        if level_2:
+            lev = 2
+        elif level_3:
+            lev = 3 
+        button_clicked = level_1 or level_2 or level_3
         if button_clicked and not self.game_active:
+            self.settings.initialize_dynamic_settings(lev)
             self.stats.reset_stats()
             self.game_active = True
             self.bullets.empty()
@@ -147,9 +163,13 @@ class AlienInvasion:
         collisions = pygame.sprite.groupcollide(
             self.bullets, self.aliens, self.settings.is_not_super_bullet, True
         )
+        if collisions:
+            self.stats.score += self.settings.alien_points
+            self.sb.prep_score()
         if not self.aliens:
             self.bullets.empty()
             self._create_fleet()
+            self.settings.increase_speed()
 
 
     def _generate_star_pattern(self):

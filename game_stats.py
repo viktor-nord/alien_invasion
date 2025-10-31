@@ -5,3 +5,4 @@ class GameStats:
 
     def reset_stats(self):
         self.lives = self.settings.lives
+        self.score = 0
