@@ -11,7 +11,8 @@ class Button:
         self.font = pygame.font.SysFont(None, 48)
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         w, h = self.screen_rect.center
-        self.positions = [w-350, w, w+350]
+        margin = 50
+        self.positions = [w - self.width - margin, w, w + self.width + margin]
         self._prep_msg(msg, (self.positions[pos],h))
         self.rect.center = (self.positions[pos],h)
 

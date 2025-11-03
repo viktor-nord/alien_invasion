@@ -84,6 +84,7 @@ class AlienInvasion:
         if self.stats.lives > 0:
             sleep(0.5)
             self.stats.lives -= 1
+            self.sb.prep_ships()
             self.bullets.empty()
             self.aliens.empty()
             self._create_fleet()
@@ -118,18 +119,22 @@ class AlienInvasion:
                 self._check_play_button(mouse_pos)
     
     def _check_play_button(self, mouse_pos):
-        lev = 1
         level_1 = self.play_button.rect.collidepoint(mouse_pos)
         level_2 = self.play_button_level_2.rect.collidepoint(mouse_pos)
         level_3 = self.play_button_level_3.rect.collidepoint(mouse_pos)
+        lv = 1
         if level_2:
-            lev = 2
+            lv = 2
         elif level_3:
-            lev = 3 
+            lv = 3 
         button_clicked = level_1 or level_2 or level_3
         if button_clicked and not self.game_active:
-            self.settings.initialize_dynamic_settings(lev)
+            self.stats.level = lv
+            self.settings.initialize_dynamic_settings(lv)
             self.stats.reset_stats()
+            self.sb.prep_score()
+            self.sb.prep_level()
+            self.sb.prep_ships()
             self.game_active = True
             self.bullets.empty()
             self.aliens.empty()
@@ -160,17 +165,30 @@ class AlienInvasion:
         self._check_bullet_alien_collision()
 
     def _check_bullet_alien_collision(self):
+        """pygame.sprite.groupcollide
+        takes in 4 arguments. 
+        1. a sprite groupe that might collide with something
+        2. a sprite groupe that the first groupe sprite might collide into
+        3. if the first sprite should diaper when colliding 
+        4. if the second sprite should diaper when colliding
+
+        this returns a dictionary where the first sprite groupe is the key 
+        and the second sprite groupe is the value
+        """
         collisions = pygame.sprite.groupcollide(
             self.bullets, self.aliens, self.settings.is_not_super_bullet, True
         )
         if collisions:
-            self.stats.score += self.settings.alien_points
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
             self.sb.prep_score()
+            self.sb.check_high_score()
         if not self.aliens:
             self.bullets.empty()
             self._create_fleet()
             self.settings.increase_speed()
-
+            self.stats.level += 1
+            self.sb.prep_level()
 
     def _generate_star_pattern(self):
         pattern = []
