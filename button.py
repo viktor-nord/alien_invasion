@@ -10,16 +10,23 @@ class Button:
         self.text_color = (255, 255, 255)
         self.font = pygame.font.SysFont(None, 48)
         self.rect = pygame.Rect(0, 0, self.width, self.height)
+        self._prep_msg(msg)
+
+    def _prep_msg(self, msg):
+        self.msg_image = self.font.render(msg, True, self.text_color, self.button_color)
+        self.msg_image_rect = self.msg_image.get_rect()
+        self.msg_image_rect.center = self.screen_rect.center
+        self.rect.center = self.screen_rect.center
+
+    def _prep_msg_multiple_buttons(self, msg, pos_number):
         w, h = self.screen_rect.center
         margin = 50
-        self.positions = [w - self.width - margin, w, w + self.width + margin]
-        self._prep_msg(msg, (self.positions[pos],h))
-        self.rect.center = (self.positions[pos],h)
-
-    def _prep_msg(self, msg, pos):
+        positions = [w - self.width - margin, w, w + self.width + margin]
+        pos = positions[pos_number]
         self.msg_image = self.font.render(msg, True, self.text_color, self.button_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = pos
+        self.rect.center = (positions[pos_number],h)
     
     def draw_button(self):
         self.screen.fill(self.button_color, self.rect)

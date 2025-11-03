@@ -17,13 +17,7 @@ class AlienInvasion:
         self.settings = Settings()
         self.clock = pygame.time.Clock()
         self.game_active = False
-        if self.settings.fullscreen:
-            wh = (0, 0)
-            f = pygame.FULLSCREEN
-        else:
-            wh = (self.settings.screen_width, self.settings.screen_height)
-            f = 0
-        self.screen = pygame.display.set_mode(wh, f)
+        self.screen = self.get_screen()
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption('Alien Invasion')
@@ -34,9 +28,9 @@ class AlienInvasion:
         self.aliens = pygame.sprite.Group()
         self.stars = pygame.sprite.Group()
         self._create_fleet()
-        self.play_button = Button(self, "Play", 0)
-        self.play_button_level_2 = Button(self, "Play Level 2", 1)
-        self.play_button_level_3 = Button(self, "Play Level 3", 2)
+        self.play_button = Button(self, "Play")
+        #self.play_button_level_2 = Button(self, "Play Level 2", 1)
+        #self.play_button_level_3 = Button(self, "Play Level 3", 2)
         self.sb = Scoreboard(self)
         
 
@@ -50,6 +44,15 @@ class AlienInvasion:
                 self.clock.tick(60)
             self._update_screen()
 
+    def get_screen(self):
+        if self.settings.fullscreen:
+            wh = (0, 0)
+            f = pygame.FULLSCREEN
+        else:
+            wh = (self.settings.screen_width, self.settings.screen_height)
+            f = 0
+        return pygame.display.set_mode(wh, f)
+
     #Helper Methods
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
@@ -61,8 +64,8 @@ class AlienInvasion:
         self.sb.show_score()
         if not self.game_active:
             self.play_button.draw_button()
-            self.play_button_level_2.draw_button()
-            self.play_button_level_3.draw_button()
+            #self.play_button_level_2.draw_button()
+            #self.play_button_level_3.draw_button()
         pygame.display.flip()
 
     def _update_aliens(self):
@@ -119,7 +122,7 @@ class AlienInvasion:
                 self._check_play_button(mouse_pos)
     
     def _check_play_button(self, mouse_pos):
-        level_1 = self.play_button.rect.collidepoint(mouse_pos)
+        """level_1 = self.play_button.rect.collidepoint(mouse_pos)
         level_2 = self.play_button_level_2.rect.collidepoint(mouse_pos)
         level_3 = self.play_button_level_3.rect.collidepoint(mouse_pos)
         lv = 1
@@ -127,8 +130,10 @@ class AlienInvasion:
             lv = 2
         elif level_3:
             lv = 3 
-        button_clicked = level_1 or level_2 or level_3
-        if button_clicked and not self.game_active:
+        button_clicked = level_1 or level_2 or level_3"""
+
+        if self.play_button.rect.collidepoint(mouse_pos) and not self.game_active:
+            lv = 1
             self.stats.level = lv
             self.settings.initialize_dynamic_settings(lv)
             self.stats.reset_stats()
