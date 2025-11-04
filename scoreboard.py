@@ -26,10 +26,8 @@ class Scoreboard:
     def prep_ships(self):
         self.ships = Group()
         for ship_number in range(self.stats.lives):
-            ship = Ship(self.game)
-            w, h = (ship.rect.width / 2, ship.rect.height / 2)
-            ship.image = pygame.transform.scale(ship.image, (w, h))
-            ship.rect.x = 10 + ship_number * (w + 5)
+            ship = Ship(self.game, True)
+            ship.rect.x = 10 + ship_number * (ship.rect.width + 5)
             ship.rect.y = 10
             self.ships.add(ship)
     

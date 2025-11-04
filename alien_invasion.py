@@ -133,6 +133,9 @@ class AlienInvasion:
             pygame.mouse.set_visible(False)
                  
     def _check_key_events(self, key, is_key_down):
+        if is_key_down == False:
+            self.ship.image = pygame.image.load('images/player.bmp')
+        
         if key == pygame.K_RIGHT:
             self.ship.moving_right = is_key_down
         elif key == pygame.K_LEFT:
@@ -200,11 +203,6 @@ class AlienInvasion:
             y_count += MARGIN
             x_count = 0
         return pattern
-
-    def _add_stars(self):
-        for star in self.star_pattern:
-            img = pygame.image.load(star['img'])
-            self.screen.blit(img, (star['x'], star['y']))
 
     def _fire_bullet(self):
         if len(self.bullets) < self.settings.bullets_allowed:
