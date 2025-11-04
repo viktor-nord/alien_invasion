@@ -15,9 +15,9 @@ class Ship(Sprite):
         self.rect.midbottom = self.screen_rect.midbottom
         self.rect.y -= 10
         self.x = float(self.rect.x)
-        # maybe change to movement null, right or left
         self.moving_right = False
         self.moving_left = False
+        self.number_of_ever_bullets = 0
     
     def blitme(self):
         self.screen.blit(self.image, self.rect)

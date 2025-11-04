@@ -12,6 +12,7 @@ class Bullet(Sprite):
                                 self.settings.bullet_height)
         self.rect.midtop = game.ship.rect.midtop
         self.y = float(self.rect.y)
+        self.type = 'regular'
     
     def update(self):
         self.y -= self.settings.bullet_speed
@@ -19,3 +20,9 @@ class Bullet(Sprite):
     
     def draw_bullet(self):
         pygame.draw.rect(self.screen, self.color, self.rect)
+
+class EverBullet(Bullet):
+    def __init__(self, game):
+        super().__init__(game)
+        self.color = self.settings.ever_bullet_color
+        self.type = 'ever'

@@ -5,11 +5,12 @@ from time import sleep
 
 from settings import Settings
 from ship import Ship
-from bullet import Bullet
+from bullet import Bullet, EverBullet
 from alien import Alien
 from game_stats import GameStats
 from button import Button
 from scoreboard import Scoreboard
+from power_ups import Powerups
 
 class AlienInvasion:
     def __init__(self):
@@ -24,9 +25,10 @@ class AlienInvasion:
         self.star_pattern = self._generate_star_pattern()
         self.stats = GameStats(self)
         self.ship = Ship(self)
+        self.power_ups = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
-        self.stars = pygame.sprite.Group()
+        self._generate_power_ups()
         self._create_fleet()
         self.play_button = Button(self, "Play")
         self.sb = Scoreboard(self)
@@ -37,6 +39,7 @@ class AlienInvasion:
             self._check_events()
             if self.game_active:
                 self.ship.update()
+                self._update_powerups()
                 self._update_bullets()
                 self._update_aliens()
                 self.clock.tick(60)
@@ -54,18 +57,28 @@ class AlienInvasion:
     #Helper Methods
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
-        for star in self.star_pattern:
-            self.screen.blit(
-                pygame.image.load(star['img']), (star['x'], star['y'])
-            )
-        for bullet in self.bullets.sprites():
-            bullet.draw_bullet()
+        self._draw_stars()
+        self._draw_bullets()
         self.aliens.draw(self.screen)
+        self.power_ups.draw(self.screen)
         self.ship.blitme()
         self.sb.show_score()
         if not self.game_active:
             self.play_button.draw_button()
         pygame.display.flip()
+
+    def _draw_bullets(self):
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
+
+    def _draw_stars(self):
+        for star in self.star_pattern:
+            img = pygame.image.load(star['img'])
+            self.screen.blit(img, (star['x'], star['y']))
+
+    def _generate_power_ups(self):
+        powerup = Powerups(self, 0)
+        self.power_ups.add(powerup)
 
     def _update_aliens(self):
         self._check_fleet_edges()
@@ -74,6 +87,14 @@ class AlienInvasion:
             self.ship, self.aliens
         ) or self._check_aliens_bottom():
             self._ship_hit()
+
+    def _update_powerups(self):
+        collide = pygame.sprite.spritecollideany(self.ship, self.power_ups)
+        if collide:
+            if collide.type == 'ever_bullet':
+                self.ship.number_of_ever_bullets = 5
+            self.power_ups.remove(collide)
+        self.power_ups.update()
 
     def _check_aliens_bottom(self):
         is_game_over = False
@@ -111,7 +132,6 @@ class AlienInvasion:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            # Modified
             elif event.type == pygame.KEYDOWN:
                 self._check_key_events(event.key, True)
             elif event.type == pygame.KEYUP:
@@ -166,10 +186,12 @@ class AlienInvasion:
         and the second sprite groupe is the value
         """
         collisions = pygame.sprite.groupcollide(
-            self.bullets, self.aliens, self.settings.ever_bullet == False, True
+            self.bullets, self.aliens, False, True
         )
         if collisions:
-            for aliens in collisions.values():
+            for bullet, aliens in collisions.items():
+                if bullet.type == 'regular':
+                    self.bullets.remove(bullet)
                 points = self.settings.alien_points
                 for alien in aliens:
                     points += (self.settings.screen_height - alien.rect.y) 
@@ -205,8 +227,12 @@ class AlienInvasion:
         return pattern
 
     def _fire_bullet(self):
+        if self.ship.number_of_ever_bullets > 0:
+            self.ship.number_of_ever_bullets -=1
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
+            if self.ship.number_of_ever_bullets > 0:
+                new_bullet = EverBullet(self)
             self.bullets.add(new_bullet)
 
     def _create_fleet(self):
