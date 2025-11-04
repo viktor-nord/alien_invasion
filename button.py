@@ -13,7 +13,9 @@ class Button:
         self._prep_msg(msg)
 
     def _prep_msg(self, msg):
-        self.msg_image = self.font.render(msg, True, self.text_color, self.button_color)
+        self.msg_image = self.font.render(
+            msg, True, self.text_color, self.button_color
+        )
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.screen_rect.center
         self.rect.center = self.screen_rect.center
@@ -23,7 +25,9 @@ class Button:
         margin = 50
         positions = [w - self.width - margin, w, w + self.width + margin]
         pos = positions[pos_number]
-        self.msg_image = self.font.render(msg, True, self.text_color, self.button_color)
+        self.msg_image = self.font.render(
+            msg, True, self.text_color, self.button_color
+        )
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = pos
         self.rect.center = (positions[pos_number],h)

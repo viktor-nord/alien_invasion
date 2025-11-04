@@ -45,8 +45,7 @@ class Scoreboard:
         score_str = f"{rounded_score:,}"
         self.score_image = self.render_text(score_str)
         self.score_rect = self.score_image.get_rect()
-        #self.score_rect.right = self.screen_rect.right - 20
-        self.score_rect.x = self.settings.screen_width - self.score_rect.width - 20
+        self.score_rect.right = self.screen_rect.right - 20
         self.score_rect.top = 20
     
     def prep_high_score(self):
@@ -58,8 +57,7 @@ class Scoreboard:
         self.high_score_rect.top = self.score_rect.top
     
     def render_text(self, text):
-        x = self.font.render(text, True, self.text_color, None)
-        return x
+        return self.font.render(text, True, self.text_color, None)
 
     def show_score(self):
         self.screen.blit(self.score_image, self.score_rect)

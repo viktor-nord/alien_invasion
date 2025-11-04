@@ -29,8 +29,6 @@ class AlienInvasion:
         self.stars = pygame.sprite.Group()
         self._create_fleet()
         self.play_button = Button(self, "Play")
-        #self.play_button_level_2 = Button(self, "Play Level 2", 1)
-        #self.play_button_level_3 = Button(self, "Play Level 3", 2)
         self.sb = Scoreboard(self)
         
 
@@ -56,7 +54,10 @@ class AlienInvasion:
     #Helper Methods
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
-        self._add_stars()
+        for star in self.star_pattern:
+            self.screen.blit(
+                pygame.image.load(star['img']), (star['x'], star['y'])
+            )
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
@@ -64,8 +65,6 @@ class AlienInvasion:
         self.sb.show_score()
         if not self.game_active:
             self.play_button.draw_button()
-            #self.play_button_level_2.draw_button()
-            #self.play_button_level_3.draw_button()
         pygame.display.flip()
 
     def _update_aliens(self):
@@ -121,25 +120,11 @@ class AlienInvasion:
                 mouse_pos = pygame.mouse.get_pos()
                 self._check_play_button(mouse_pos)
     
-    def _check_play_button(self, mouse_pos):
-        """level_1 = self.play_button.rect.collidepoint(mouse_pos)
-        level_2 = self.play_button_level_2.rect.collidepoint(mouse_pos)
-        level_3 = self.play_button_level_3.rect.collidepoint(mouse_pos)
-        lv = 1
-        if level_2:
-            lv = 2
-        elif level_3:
-            lv = 3 
-        button_clicked = level_1 or level_2 or level_3"""
-
-        if self.play_button.rect.collidepoint(mouse_pos) and not self.game_active:
-            lv = 1
-            self.stats.level = lv
-            self.settings.initialize_dynamic_settings(lv)
+    def _check_play_button(self, pos):
+        if self.play_button.rect.collidepoint(pos) and not self.game_active:
+            self.settings.initialize_dynamic_settings()
             self.stats.reset_stats()
-            self.sb.prep_score()
-            self.sb.prep_level()
-            self.sb.prep_ships()
+            self.sb.prep_images()
             self.game_active = True
             self.bullets.empty()
             self.aliens.empty()
@@ -147,7 +132,6 @@ class AlienInvasion:
             self.ship.center_ship()
             pygame.mouse.set_visible(False)
                  
-    # Modified
     def _check_key_events(self, key, is_key_down):
         if key == pygame.K_RIGHT:
             self.ship.moving_right = is_key_down
@@ -158,9 +142,7 @@ class AlienInvasion:
         elif key == pygame.K_SPACE and is_key_down: 
             self._fire_bullet()
         elif key == pygame.K_p:
-            cord = (self.play_button.rect.left + 1, self.play_button.rect.top + 1)
-            # instead of creating a start game function
-            self._check_play_button(cord)
+            self._check_play_button(self.play_button.rect.center)
     
     def _update_bullets(self):
         self.bullets.update()
@@ -181,11 +163,14 @@ class AlienInvasion:
         and the second sprite groupe is the value
         """
         collisions = pygame.sprite.groupcollide(
-            self.bullets, self.aliens, self.settings.is_not_super_bullet, True
+            self.bullets, self.aliens, self.settings.ever_bullet == False, True
         )
         if collisions:
             for aliens in collisions.values():
-                self.stats.score += self.settings.alien_points * len(aliens)
+                points = self.settings.alien_points
+                for alien in aliens:
+                    points += (self.settings.screen_height - alien.rect.y) 
+                self.stats.score += points
             self.sb.prep_score()
             self.sb.check_high_score()
         if not self.aliens:
@@ -244,8 +229,6 @@ class AlienInvasion:
         new_alien.rect.y = y
         self.aliens.add(new_alien)
         
-
-
 
 if __name__ == '__main__':
     ai = AlienInvasion()

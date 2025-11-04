@@ -7,3 +7,35 @@ destroys the aliens. If the player destroys all the aliens, a new fleet
 appears that moves faster than the previous fleet. If any alien hits 
 the player’s ship or reaches the bottom of the screen, the player 
 loses a ship. If the player loses three ships, the game ends.
+
+multiple buttons
+
+in alien_invasion.py
+
+def __init__(self):
+...
+    self.play_button = Button(self, "Play")
+    self.play_button_level_2 = Button(self, "Play Level 2", 1)
+    self.play_button_level_3 = Button(self, "Play Level 3", 2)
+...
+
+def _update_screen(self):
+...
+    if not self.game_active:
+        self.play_button.draw_button()
+        self.play_button_level_2.draw_button()
+        self.play_button_level_3.draw_button()
+
+def _check_play_button(self, mouse_pos):
+    level_1 = self.play_button.rect.collidepoint(mouse_pos)
+    level_2 = self.play_button_level_2.rect.collidepoint(mouse_pos)
+    level_3 = self.play_button_level_3.rect.collidepoint(mouse_pos)
+    lv = 1
+    if level_2:
+        lv = 2
+    elif level_3:
+        lv = 3 
+    button_clicked = level_1 or level_2 or level_3
+    if self.play_button.rect.collidepoint(mouse_pos) and not self.game_active:
+        self.stats.level = lv
+        self.settings.initialize_dynamic_settings(lv)
