@@ -39,3 +39,31 @@ def _check_play_button(self, mouse_pos):
     if self.play_button.rect.collidepoint(mouse_pos) and not self.game_active:
         self.stats.level = lv
         self.settings.initialize_dynamic_settings(lv)
+
+alien_invasion
+12.1
+12.2
+13.1
+13.2
+14.1
+14.4
+14.5
+14.6
+14.7
+12.3
+
+games keys
+12.5
+
+games rocket
+12.4
+13.3
+13.4
+
+vertical
+12.6
+13.5
+13.6
+14.2
+14.3
+14.8

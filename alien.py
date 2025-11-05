@@ -11,6 +11,7 @@ class Alien(Sprite):
         self.rect.x = self.rect.width
         self.rect.y = self.rect.height
         self.x = float(self.rect.x)
+        self.type = 'alien'
     
     def update(self):
         self.x += self.settings.alien_speed * self.settings.fleet_dir
@@ -24,7 +25,16 @@ class Ufo(Alien):
     def __init__(self, game):
         super().__init__(game)
         self.image = pygame.image.load('images/enemyUFO.bmp')
-    
+        self.type = 'ufo'
+        self.direction = 1
+        self.gravity = 1
+        self.bounce_height = 20
+        self.velocity = self.bounce_height
+
     def update(self):
-        self.x += 1
+        self.x += self.settings.alien_speed * self.direction
         self.rect.x = self.x
+        self.rect.y += self.velocity
+        self.velocity -= self.gravity
+        if self.velocity < self.bounce_height * -1:
+            self.velocity = self.bounce_height

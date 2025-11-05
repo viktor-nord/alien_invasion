@@ -9,7 +9,7 @@ class GameStats:
         )['high_score']
         self.reset_stats()
 
-    def reset_stats(self, level=1):
+    def reset_stats(self):
         self.lives = self.settings.lives
         self.score = 0
-        self.level = level
+        self.level = 1

@@ -6,7 +6,7 @@ from time import sleep
 from settings import Settings
 from ship import Ship
 from bullet import Bullet, EverBullet
-from alien import Alien
+from alien import Alien, Ufo
 from game_stats import GameStats
 from button import Button
 from scoreboard import Scoreboard
@@ -122,7 +122,11 @@ class AlienInvasion:
     def _check_fleet_edges(self):
         for alien in self.aliens.sprites():
             if alien.check_edges():
-                self._change_fleet_dir()
+                if alien.type == 'alien':
+                    self._change_fleet_dir()
+                else:
+                    alien.rect.y += self.settings.fleet_drop_speed
+                    alien.direction *= -1
                 break
 
     def _change_fleet_dir(self):
@@ -202,10 +206,10 @@ class AlienInvasion:
             self.sb.check_high_score()
         if not self.aliens:
             self.bullets.empty()
-            self._create_fleet()
             self.settings.increase_speed()
             self.stats.level += 1
             self.sb.prep_level()
+            self._create_fleet()
 
     def _generate_star_pattern(self):
         pattern = []
@@ -247,6 +251,15 @@ class AlienInvasion:
                 fleet_width += 2 * alien_width
             fleet_width = alien_width
             fleet_height +=2 * alien_height
+        if self.stats.level == 1:
+            return
+        caped_level = self.stats.level - 1
+        if caped_level > 10:
+            caped_level = 10
+        for x in list(range(caped_level)):
+            ufo = Ufo(self)
+            ufo.x = ufo.rect.width * x + x * 10
+            self.aliens.add(ufo)
 
     def _create_alien(self, x, y):
         new_alien = Alien(self)
