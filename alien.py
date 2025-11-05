@@ -19,4 +19,12 @@ class Alien(Sprite):
     def check_edges(self):
         screen_rect = self.screen.get_rect()
         return (self.rect.right >= screen_rect.right) or (self.rect.left <= 0)
+
+class Ufo(Alien):
+    def __init__(self, game):
+        super().__init__(game)
+        self.image = pygame.image.load('images/enemyUFO.bmp')
     
+    def update(self):
+        self.x += 1
+        self.rect.x = self.x
