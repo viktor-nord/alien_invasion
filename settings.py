@@ -14,7 +14,7 @@ class Settings:
         self.ever_bullet_color = (0, 191, 255)
         self.bullets_allowed = 3
         # Alien
-        self.fleet_drop_speed = 10
+        self.fleet_drop_speed = 15
         self.alien_points = 50
         # Player
         self.ever_bullet = False
@@ -26,9 +26,9 @@ class Settings:
         self.initialize_dynamic_settings()
 
     def initialize_dynamic_settings(self):
-        self.ship_speed = 2.5
-        self.bullet_speed = 5
-        self.alien_speed = 1
+        self.ship_speed = 5
+        self.bullet_speed = 10
+        self.alien_speed = 3
         self.fleet_dir = 1 #1=right -1=left
 
     def increase_speed(self):

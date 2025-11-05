@@ -18,11 +18,15 @@ class Bullet(Sprite):
         self.y -= self.settings.bullet_speed
         self.rect.y = self.y
     
-    def draw_bullet(self):
-        pygame.draw.rect(self.screen, self.color, self.rect)
+    def draw_bullet(self, type):
+        if type == 'regular':
+            pygame.draw.rect(self.screen, self.color, self.rect)
+        else:
+            self.screen.blit(self.image, self.rect)
 
 class EverBullet(Bullet):
     def __init__(self, game):
         super().__init__(game)
         self.color = self.settings.ever_bullet_color
         self.type = 'ever'
+        self.image = pygame.image.load('images/laserRed.bmp')

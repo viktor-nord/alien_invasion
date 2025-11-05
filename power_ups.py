@@ -12,8 +12,7 @@ class Powerups(Sprite):
         self.image = pygame.image.load(f'images/laserGreenShot.bmp')
         self.rect = self.image.get_rect()
         self.rect.x = randint(0, self.settings.screen_width - self.rect.width)
-        #self.rect.y = randint(-3000, -100)
-        self.rect.y = 100
+        self.rect.y = randint(-3000, -100)
         self.fall_speed = 1
         self.number_of_uses = 0
     

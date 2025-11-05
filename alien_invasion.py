@@ -69,7 +69,7 @@ class AlienInvasion:
 
     def _draw_bullets(self):
         for bullet in self.bullets.sprites():
-            bullet.draw_bullet()
+            bullet.draw_bullet(bullet.type)
 
     def _draw_stars(self):
         for star in self.star_pattern:
@@ -93,6 +93,8 @@ class AlienInvasion:
         if collide:
             if collide.type == 'ever_bullet':
                 self.ship.number_of_ever_bullets = 5
+                new_powerup = Powerups(self, 0)
+                self.power_ups.add(new_powerup)
             self.power_ups.remove(collide)
         self.power_ups.update()
 
