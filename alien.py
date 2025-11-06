@@ -20,6 +20,19 @@ class Alien(Sprite):
     def check_edges(self):
         return (self.rect.right >= self.screen.get_rect().right) or (self.rect.left <= 0)
 
+    def generate_fleet_grid(self):
+        grid = []
+        alien_width, alien_height = self.rect.size
+        fleet_width, fleet_height = alien_width, alien_height
+        while fleet_height < (self.settings.screen_height - 3 * alien_height):
+            while fleet_width < (self.settings.screen_width - 2 * alien_width):
+                grid.append({'x':fleet_width, 'y':fleet_height})
+                fleet_width += 2 * alien_width
+            fleet_width = alien_width
+            fleet_height +=2 * alien_height
+        return grid
+
+
 class Ufo(Alien):
     def __init__(self, game):
         super().__init__(game)

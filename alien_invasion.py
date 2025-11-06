@@ -97,7 +97,6 @@ class AlienInvasion:
         if self.stats.lives > 0:
             sleep(0.5)
             self.stats.lives -= 1
-            self.sb.prep_ships()
             self.reset_sprites()
             sleep(0.5)
         else:
@@ -140,7 +139,6 @@ class AlienInvasion:
         if self.play_button.rect.collidepoint(pos) and not self.game_active:
             self.settings.initialize_dynamic_settings()
             self.stats.reset_stats()
-            self.sb.prep_images()
             self.game_active = True
             self.reset_sprites()
             pygame.mouse.set_visible(False)
@@ -179,16 +177,17 @@ class AlienInvasion:
         if not self.aliens:
             self.settings.increase_speed()
             self.stats.level += 1
-            self.sb.prep_level()
             self.reset_sprites()
 
     def reset_sprites(self):
+        self.sb.prep_images()
         self.bullets.empty()
         self.aliens.empty()
         self.power_ups.empty()
         self.ship.center_ship()
         self._create_fleet()
         self._generate_power_ups()
+        
 
     def _fire_bullet(self):
         if self.ship.number_of_ever_bullets > 0:
@@ -200,15 +199,9 @@ class AlienInvasion:
             self.bullets.add(new_bullet)
 
     def _create_fleet(self):
-        alien = Alien(self)
-        alien_width, alien_height = alien.rect.size
-        fleet_width, fleet_height = alien_width, alien_height
-        while fleet_height < (self.settings.screen_height - 3 * alien_height):
-            while fleet_width < (self.settings.screen_width - 2 * alien_width):
-                self._create_alien(fleet_width, fleet_height)
-                fleet_width += 2 * alien_width
-            fleet_width = alien_width
-            fleet_height +=2 * alien_height
+        grid = Alien(self).generate_fleet_grid()
+        for pos in grid:
+            self._create_alien(pos['x'], pos['y'])
         for x in self.stats.get_caped_level_list():
             ufo = Ufo(self)
             ufo.x = 10 + x * (ufo.rect.width + 10)
