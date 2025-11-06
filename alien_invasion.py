@@ -1,6 +1,5 @@
 import sys
 import pygame
-from random import randint, choice
 from time import sleep
 
 from settings import Settings
@@ -22,7 +21,7 @@ class AlienInvasion:
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption('Alien Invasion')
-        self.star_pattern = self._generate_star_pattern()
+        self.star_pattern = self.settings.generate_star_pattern()
         self.stats = GameStats(self)
         self.ship = Ship(self)
         self.power_ups = pygame.sprite.Group()
@@ -84,7 +83,7 @@ class AlienInvasion:
             if collide.type == 'ever_bullet':
                 self.ship.number_of_ever_bullets = 5
             self.power_ups.remove(collide)
-            self._generate_power_ups(self)
+            self._generate_power_ups()
         self.power_ups.update()
 
     def _check_aliens_bottom(self):
@@ -122,12 +121,17 @@ class AlienInvasion:
 
     def _check_events(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            keys = pygame.key.get_pressed()
+            self.ship.moving_left = keys[pygame.K_LEFT]
+            self.ship.moving_right = keys[pygame.K_RIGHT]
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                self._check_key_events(event.key, True)
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self._fire_bullet()
+            elif keys[pygame.K_p]:
+                self._check_play_button(self.play_button.rect.center)
             elif event.type == pygame.KEYUP:
-                self._check_key_events(event.key, False)
+                self.ship.image = pygame.image.load('images/player.bmp')
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 self._check_play_button(mouse_pos)
@@ -140,21 +144,7 @@ class AlienInvasion:
             self.game_active = True
             self.reset_sprites()
             pygame.mouse.set_visible(False)
-                 
-    def _check_key_events(self, key, is_key_down):
-        if is_key_down == False and self.ship.image != pygame.image.load('images/player.bmp'):
-            self.ship.image = pygame.image.load('images/player.bmp')
-        if key == pygame.K_RIGHT:
-            self.ship.moving_right = is_key_down
-        elif key == pygame.K_LEFT:
-            self.ship.moving_left = is_key_down
-        elif key == pygame.K_q:
-            sys.exit()
-        elif key == pygame.K_SPACE and is_key_down: 
-            self._fire_bullet()
-        elif key == pygame.K_p:
-            self._check_play_button(self.play_button.rect.center)
-    
+
     def _update_bullets(self):
         self.bullets.update()
         for bullet in self.bullets.copy():
@@ -200,27 +190,6 @@ class AlienInvasion:
         self._create_fleet()
         self._generate_power_ups()
 
-    def _generate_star_pattern(self):
-        pattern = []
-        MARGIN = 100
-        star_image = pygame.image.load('images/starBig.bmp')
-        # star_image.get_rect() = (0, 0, 23, 21)
-        x_count, y_count, width, height = star_image.get_rect()
-        while y_count < self.settings.screen_height:
-            while x_count < self.settings.screen_width:
-                star = {
-                    'img': choice(
-                        ['images/starBig.bmp', 'images/starSmall.bmp']
-                    ), 
-                    'x': randint(x_count, x_count + MARGIN - width),
-                    'y': randint(y_count, y_count + MARGIN - height)
-                }
-                pattern.append(star)
-                x_count += MARGIN
-            y_count += MARGIN
-            x_count = 0
-        return pattern
-
     def _fire_bullet(self):
         if self.ship.number_of_ever_bullets > 0:
             self.ship.number_of_ever_bullets -=1
@@ -242,7 +211,7 @@ class AlienInvasion:
             fleet_height +=2 * alien_height
         for x in self.stats.get_caped_level_list():
             ufo = Ufo(self)
-            ufo.x = ufo.rect.width * x + x * 10
+            ufo.x = 10 + x * (ufo.rect.width + 10)
             self.aliens.add(ufo)
 
     def _create_alien(self, x, y):
@@ -254,3 +223,4 @@ class AlienInvasion:
 if __name__ == '__main__':
     ai = AlienInvasion()
     ai.run_game()
+    pygame.quit()

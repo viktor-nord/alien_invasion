@@ -1,7 +1,8 @@
 import pygame
+from random import randint, choice
 
 class Settings:
-    def __init__(self, level=1):
+    def __init__(self):
         # Screen
         self.screen_width = 1200
         self.screen_height = 800
@@ -40,11 +41,26 @@ class Settings:
         self.alien_points = int(self.alien_points * self.score_scale)
     
     def get_screen(self):
-        if self.fullscreen:
-            wh = (0, 0)
-            f = pygame.FULLSCREEN
-        else:
-            wh = (self.screen_width, self.screen_height)
-            f = 0
+        wh = (0, 0) if self.fullscreen else (self.screen_width, self.screen_height)
+        f = pygame.FULLSCREEN if self.fullscreen else 0
         return pygame.display.set_mode(wh, f)
-    
+
+    def generate_star_pattern(self):
+        pattern = []
+        MARGIN = 100
+        star_image = pygame.image.load('images/starBig.bmp')
+        x_count, y_count, width, height = star_image.get_rect()
+        while y_count < self.screen_height:
+            while x_count < self.screen_width:
+                star = {
+                    'img': choice(
+                        ['images/starBig.bmp', 'images/starSmall.bmp']
+                    ), 
+                    'x': randint(x_count, x_count + MARGIN - width),
+                    'y': randint(y_count, y_count + MARGIN - height)
+                }
+                pattern.append(star)
+                x_count += MARGIN
+            y_count += MARGIN
+            x_count = 0
+        return pattern

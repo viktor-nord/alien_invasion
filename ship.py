@@ -7,10 +7,9 @@ class Ship(Sprite):
         self.settings = ai_game.settings
         self.screen = ai_game.screen
         self.screen_rect = ai_game.screen.get_rect()
-        if small:
-            self.image = pygame.image.load('images/life.bmp')
-        else:
-            self.image = pygame.image.load('images/player.bmp')
+        self.image = pygame.image.load(
+            'images/life.bmp'
+        ) if small else pygame.image.load('images/player.bmp')
         self.rect = self.image.get_rect()
         self.rect.midbottom = self.screen_rect.midbottom
         self.rect.y -= 10

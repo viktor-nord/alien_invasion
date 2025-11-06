@@ -18,8 +18,7 @@ class Alien(Sprite):
         self.rect.x = self.x
     
     def check_edges(self):
-        screen_rect = self.screen.get_rect()
-        return (self.rect.right >= screen_rect.right) or (self.rect.left <= 0)
+        return (self.rect.right >= self.screen.get_rect().right) or (self.rect.left <= 0)
 
 class Ufo(Alien):
     def __init__(self, game):
