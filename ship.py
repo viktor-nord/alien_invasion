@@ -1,12 +1,14 @@
 import pygame
 from pygame.sprite import Sprite
 
+from power_ups import Powerups, power_up_types
+
 class Ship(Sprite):
-    def __init__(self, ai_game, small=False):
+    def __init__(self, game, small=False):
         super().__init__()
-        self.settings = ai_game.settings
-        self.screen = ai_game.screen
-        self.screen_rect = ai_game.screen.get_rect()
+        self.settings = game.settings
+        self.screen = game.screen
+        self.screen_rect = game.screen.get_rect()
         self.image = pygame.image.load(
             'images/life.bmp'
         ) if small else pygame.image.load('images/player.bmp')
@@ -18,9 +20,13 @@ class Ship(Sprite):
         self.moving_left = False
         self.number_of_ever_bullets = 0
         self.number_of_shields = 0
+        self.shield = Powerups(game, power_up_types[1])
     
     def blitme(self):
         self.screen.blit(self.image, self.rect)
+        if self.number_of_shields > 0:
+            self.shield.rect.center = self.rect.center
+            self.screen.blit(self.shield.image, self.shield.rect)
     
     def update(self):
         if self.moving_right and self.rect.right < self.screen_rect.right:

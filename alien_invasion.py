@@ -10,7 +10,7 @@ from alien import Alien, Ufo
 from game_stats import GameStats
 from button import Button
 from scoreboard import Scoreboard
-from power_ups import Powerups
+from power_ups import Powerups, power_up_types
 
 class AlienInvasion:
     def __init__(self):
@@ -25,7 +25,7 @@ class AlienInvasion:
         self.star_pattern = self.settings.generate_star_pattern()
         self.stats = GameStats(self)
         self.ship = Ship(self)
-        self.power_ups = pygame.sprite.Group()
+        self.powerup = Powerups(self, choice(power_up_types))
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self._generate_power_ups()
@@ -60,9 +60,8 @@ class AlienInvasion:
         self.aliens.add(new_alien)
 
     def _generate_power_ups(self):
-        #type = choice([0,1])
-        powerup = Powerups(self, 0)
-        self.power_ups.add(powerup)
+        type = choice(power_up_types)
+        self.powerup = Powerups(self, type)
 
     def _draw_bullets(self):
         for bullet in self.bullets.sprites():
@@ -88,7 +87,7 @@ class AlienInvasion:
         self._draw_stars()
         self._draw_bullets()
         self.aliens.draw(self.screen)
-        self.power_ups.draw(self.screen)
+        self.powerup.blitme()
         self.ship.blitme()
         self.sb.show_score()
         if not self.game_active:
@@ -96,13 +95,13 @@ class AlienInvasion:
         pygame.display.flip()
 
     def _update_powerups(self):
-        collide = pygame.sprite.spritecollideany(self.ship, self.power_ups)
-        if collide:
-            if collide.type == 'ever_bullet':
+        if self.ship.rect.colliderect(self.powerup.rect):
+            if self.powerup.type == 'ever_bullet':
                 self.ship.number_of_ever_bullets = 5
-            self.power_ups.remove(collide)
+            if self.powerup.type == 'shield':
+                self.ship.number_of_shields = 1
             self._generate_power_ups()
-        self.power_ups.update()
+        self.powerup.update()
 
     def _update_bullets(self):
         self.bullets.update()
@@ -114,9 +113,12 @@ class AlienInvasion:
     def _update_aliens(self):
         self._check_fleet_edges()
         self.aliens.update()
-        if pygame.sprite.spritecollideany(
-            self.ship, self.aliens
-        ) or self._check_aliens_bottom():
+        collide = pygame.sprite.spritecollideany(self.ship, self.aliens)        
+        if collide and self.ship.number_of_shields > 0:
+            self.aliens.remove(collide)
+            self.ship.number_of_shields -= 1
+            collide = None
+        if self._check_aliens_bottom():
             self._ship_hit()
 
     # Check
@@ -200,7 +202,7 @@ class AlienInvasion:
         self.sb.prep_images()
         self.bullets.empty()
         self.aliens.empty()
-        self.power_ups.empty()
+        self._generate_power_ups()
         self.ship.center_ship()
         self._create_fleet()
         self._generate_power_ups()

@@ -19,10 +19,6 @@ class Settings:
         # Alien
         self.fleet_drop_speed = 15
         self.alien_points = 50
-        # Player
-        self.ever_bullet = False
-        self.shied = False
-        self.laser = False
         # Level
         self.speedup_scale = 1.1
         self.score_scale = 1.5
