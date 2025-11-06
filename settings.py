@@ -1,3 +1,5 @@
+import pygame
+
 class Settings:
     def __init__(self, level=1):
         # Screen
@@ -36,3 +38,13 @@ class Settings:
         self.bullet_speed *= self.speedup_scale
         self.alien_speed *= self.speedup_scale
         self.alien_points = int(self.alien_points * self.score_scale)
+    
+    def get_screen(self):
+        if self.fullscreen:
+            wh = (0, 0)
+            f = pygame.FULLSCREEN
+        else:
+            wh = (self.screen_width, self.screen_height)
+            f = 0
+        return pygame.display.set_mode(wh, f)
+    

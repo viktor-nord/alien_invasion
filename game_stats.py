@@ -13,3 +13,12 @@ class GameStats:
         self.lives = self.settings.lives
         self.score = 0
         self.level = 1
+
+    def get_caped_level_list(self):
+        if self.level == 1:
+            lv = 0
+        elif self.level > 10:
+            lv = 10
+        else:
+            lv = self.level - 1
+        return list(range(lv))

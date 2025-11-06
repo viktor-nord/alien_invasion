@@ -18,7 +18,7 @@ class AlienInvasion:
         self.settings = Settings()
         self.clock = pygame.time.Clock()
         self.game_active = False
-        self.screen = self.get_screen()
+        self.screen = self.settings.get_screen()
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption('Alien Invasion')
@@ -33,7 +33,6 @@ class AlienInvasion:
         self.play_button = Button(self, "Play")
         self.sb = Scoreboard(self)
         
-
     def run_game(self):
         while True:
             self._check_events()
@@ -44,15 +43,6 @@ class AlienInvasion:
                 self._update_aliens()
                 self.clock.tick(60)
             self._update_screen()
-
-    def get_screen(self):
-        if self.settings.fullscreen:
-            wh = (0, 0)
-            f = pygame.FULLSCREEN
-        else:
-            wh = (self.settings.screen_width, self.settings.screen_height)
-            f = 0
-        return pygame.display.set_mode(wh, f)
 
     #Helper Methods
     def _update_screen(self):
@@ -93,9 +83,8 @@ class AlienInvasion:
         if collide:
             if collide.type == 'ever_bullet':
                 self.ship.number_of_ever_bullets = 5
-                new_powerup = Powerups(self, 0)
-                self.power_ups.add(new_powerup)
             self.power_ups.remove(collide)
+            self._generate_power_ups(self)
         self.power_ups.update()
 
     def _check_aliens_bottom(self):
@@ -110,10 +99,7 @@ class AlienInvasion:
             sleep(0.5)
             self.stats.lives -= 1
             self.sb.prep_ships()
-            self.bullets.empty()
-            self.aliens.empty()
-            self._create_fleet()
-            self.ship.center_ship()
+            self.reset_sprites()
             sleep(0.5)
         else:
             self.game_active = False
@@ -152,16 +138,12 @@ class AlienInvasion:
             self.stats.reset_stats()
             self.sb.prep_images()
             self.game_active = True
-            self.bullets.empty()
-            self.aliens.empty()
-            self._create_fleet()
-            self.ship.center_ship()
+            self.reset_sprites()
             pygame.mouse.set_visible(False)
                  
     def _check_key_events(self, key, is_key_down):
-        if is_key_down == False:
+        if is_key_down == False and self.ship.image != pygame.image.load('images/player.bmp'):
             self.ship.image = pygame.image.load('images/player.bmp')
-        
         if key == pygame.K_RIGHT:
             self.ship.moving_right = is_key_down
         elif key == pygame.K_LEFT:
@@ -200,16 +182,23 @@ class AlienInvasion:
                     self.bullets.remove(bullet)
                 points = self.settings.alien_points
                 for alien in aliens:
-                    points += (self.settings.screen_height - alien.rect.y) 
+                    points += self.settings.screen_height - alien.rect.y
                 self.stats.score += points
             self.sb.prep_score()
             self.sb.check_high_score()
         if not self.aliens:
-            self.bullets.empty()
             self.settings.increase_speed()
             self.stats.level += 1
             self.sb.prep_level()
-            self._create_fleet()
+            self.reset_sprites()
+
+    def reset_sprites(self):
+        self.bullets.empty()
+        self.aliens.empty()
+        self.power_ups.empty()
+        self.ship.center_ship()
+        self._create_fleet()
+        self._generate_power_ups()
 
     def _generate_star_pattern(self):
         pattern = []
@@ -251,21 +240,14 @@ class AlienInvasion:
                 fleet_width += 2 * alien_width
             fleet_width = alien_width
             fleet_height +=2 * alien_height
-        if self.stats.level == 1:
-            return
-        caped_level = self.stats.level - 1
-        if caped_level > 10:
-            caped_level = 10
-        for x in list(range(caped_level)):
+        for x in self.stats.get_caped_level_list():
             ufo = Ufo(self)
             ufo.x = ufo.rect.width * x + x * 10
             self.aliens.add(ufo)
 
     def _create_alien(self, x, y):
-        new_alien = Alien(self)
+        new_alien = Alien(self, x, y)
         new_alien.x = x
-        new_alien.rect.x = x
-        new_alien.rect.y = y
         self.aliens.add(new_alien)
         
 

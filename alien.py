@@ -2,14 +2,14 @@ import pygame
 from pygame.sprite import Sprite
 
 class Alien(Sprite):
-    def __init__(self, game):
+    def __init__(self, game, x=None, y=None):
         super().__init__()
         self.screen = game.screen
         self.settings = game.settings
         self.image = pygame.image.load('images/enemyShip.bmp')
         self.rect = self.image.get_rect()
-        self.rect.x = self.rect.width
-        self.rect.y = self.rect.height
+        self.rect.x = x if x!= None else self.rect.width
+        self.rect.y = y if y!= None else self.rect.height
         self.x = float(self.rect.x)
         self.type = 'alien'
     
