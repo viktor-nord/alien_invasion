@@ -5,7 +5,7 @@ from random import choice
 
 from settings import Settings
 from ship import Ship
-from bullet import Bullet, EverBullet
+from bullet import Bullet, EverBullet, LaserBullet
 from alien import Alien, Ufo
 from game_stats import GameStats
 from button import Button
@@ -75,10 +75,16 @@ class AlienInvasion:
     def _fire_bullet(self):
         if self.ship.number_of_ever_bullets > 0:
             self.ship.number_of_ever_bullets -=1
+        if self.ship.number_of_laser_bullets > 0:
+            self.ship.number_of_laser_bullets -=1
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
             if self.ship.number_of_ever_bullets > 0:
+                self.ship.number_of_laser_bullets = 0
                 new_bullet = EverBullet(self)
+            if self.ship.number_of_laser_bullets > 0:
+                self.ship.number_of_ever_bullets = 0
+                new_bullet = LaserBullet(self)
             self.bullets.add(new_bullet)
 
     # Update
@@ -98,8 +104,12 @@ class AlienInvasion:
         if self.ship.rect.colliderect(self.powerup.rect):
             if self.powerup.type == 'ever_bullet':
                 self.ship.number_of_ever_bullets = 5
+            if self.powerup.type == 'laser':
+                self.ship.number_of_laser_bullets = 5
             if self.powerup.type == 'shield':
                 self.ship.number_of_shields = 1
+            self._generate_power_ups()
+        if self.powerup.rect.top > self.settings.screen_height:
             self._generate_power_ups()
         self.powerup.update()
 
@@ -175,8 +185,10 @@ class AlienInvasion:
         )
         if collisions:
             for bullet, aliens in collisions.items():
-                if bullet.type == 'regular':
+                if bullet.type == 'regular' or bullet.type == 'laser':
                     self.bullets.remove(bullet)
+                    if bullet.type == 'laser':
+                        self._handle_laser_hit(aliens)
                 points = self.settings.alien_points
                 for alien in aliens:
                     points += self.settings.screen_height - alien.rect.y
@@ -187,6 +199,16 @@ class AlienInvasion:
             self.settings.increase_speed()
             self.stats.level += 1
             self.reset_sprites()
+
+    def _handle_laser_hit(self, aliens):
+        for alien in self.aliens.copy():
+            right = alien.rect.x == aliens[0].rect.x + (aliens[0].rect.width * 2) and alien.rect.y == aliens[0].rect.y
+            left = alien.rect.x == aliens[0].rect.x - (aliens[0].rect.width * 2) and alien.rect.y == aliens[0].rect.y
+            down = alien.rect.y == aliens[0].rect.y + (aliens[0].rect.height * 2) and alien.rect.x == aliens[0].rect.x
+            up = alien.rect.y == aliens[0].rect.y - (aliens[0].rect.height * 2) and alien.rect.x == aliens[0].rect.x
+            if right or left or down or up:
+                self.aliens.remove(alien)
+
 
     def _ship_hit(self):
         if self.stats.lives > 0:

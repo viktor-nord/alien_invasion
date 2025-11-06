@@ -20,6 +20,7 @@ class Ship(Sprite):
         self.moving_left = False
         self.number_of_ever_bullets = 0
         self.number_of_shields = 0
+        self.number_of_laser_bullets = 0
         self.shield = Powerups(game, power_up_types[1])
     
     def blitme(self):

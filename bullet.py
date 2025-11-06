@@ -27,6 +27,11 @@ class Bullet(Sprite):
 class EverBullet(Bullet):
     def __init__(self, game):
         super().__init__(game)
-        self.color = self.settings.ever_bullet_color
         self.type = 'ever'
+        self.image = pygame.image.load('images/laserGreen.bmp')
+
+class LaserBullet(Bullet):
+    def __init__(self, game):
+        super().__init__(game)
+        self.type = 'laser'
         self.image = pygame.image.load('images/laserRed.bmp')
