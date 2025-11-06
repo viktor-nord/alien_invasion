@@ -1,6 +1,7 @@
 import sys
 import pygame
 from time import sleep
+from random import choice
 
 from settings import Settings
 from ship import Ship
@@ -43,7 +44,45 @@ class AlienInvasion:
                 self.clock.tick(60)
             self._update_screen()
 
-    #Helper Methods
+    # Create
+    def _create_fleet(self):
+        grid = Alien(self).generate_fleet_grid()
+        for pos in grid:
+            self._create_alien(pos['x'], pos['y'])
+        for x in self.stats.get_caped_level_list():
+            ufo = Ufo(self)
+            ufo.x = 10 + x * (ufo.rect.width + 10)
+            self.aliens.add(ufo)
+
+    def _create_alien(self, x, y):
+        new_alien = Alien(self, x, y)
+        new_alien.x = x
+        self.aliens.add(new_alien)
+
+    def _generate_power_ups(self):
+        #type = choice([0,1])
+        powerup = Powerups(self, 0)
+        self.power_ups.add(powerup)
+
+    def _draw_bullets(self):
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet(bullet.type)
+
+    def _draw_stars(self):
+        for star in self.star_pattern:
+            img = pygame.image.load(star['img'])
+            self.screen.blit(img, (star['x'], star['y']))
+
+    def _fire_bullet(self):
+        if self.ship.number_of_ever_bullets > 0:
+            self.ship.number_of_ever_bullets -=1
+        if len(self.bullets) < self.settings.bullets_allowed:
+            new_bullet = Bullet(self)
+            if self.ship.number_of_ever_bullets > 0:
+                new_bullet = EverBullet(self)
+            self.bullets.add(new_bullet)
+
+    # Update
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
         self._draw_stars()
@@ -56,27 +95,6 @@ class AlienInvasion:
             self.play_button.draw_button()
         pygame.display.flip()
 
-    def _draw_bullets(self):
-        for bullet in self.bullets.sprites():
-            bullet.draw_bullet(bullet.type)
-
-    def _draw_stars(self):
-        for star in self.star_pattern:
-            img = pygame.image.load(star['img'])
-            self.screen.blit(img, (star['x'], star['y']))
-
-    def _generate_power_ups(self):
-        powerup = Powerups(self, 0)
-        self.power_ups.add(powerup)
-
-    def _update_aliens(self):
-        self._check_fleet_edges()
-        self.aliens.update()
-        if pygame.sprite.spritecollideany(
-            self.ship, self.aliens
-        ) or self._check_aliens_bottom():
-            self._ship_hit()
-
     def _update_powerups(self):
         collide = pygame.sprite.spritecollideany(self.ship, self.power_ups)
         if collide:
@@ -86,23 +104,22 @@ class AlienInvasion:
             self._generate_power_ups()
         self.power_ups.update()
 
-    def _check_aliens_bottom(self):
-        is_game_over = False
-        for alien in self.aliens.sprites():
-            if alien.rect.bottom >= self.settings.screen_height:
-                is_game_over = True
-        return is_game_over
+    def _update_bullets(self):
+        self.bullets.update()
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
+        self._check_bullet_alien_collision()
 
-    def _ship_hit(self):
-        if self.stats.lives > 0:
-            sleep(0.5)
-            self.stats.lives -= 1
-            self.reset_sprites()
-            sleep(0.5)
-        else:
-            self.game_active = False
-            pygame.mouse.set_visible(True)
+    def _update_aliens(self):
+        self._check_fleet_edges()
+        self.aliens.update()
+        if pygame.sprite.spritecollideany(
+            self.ship, self.aliens
+        ) or self._check_aliens_bottom():
+            self._ship_hit()
 
+    # Check
     def _check_fleet_edges(self):
         for alien in self.aliens.sprites():
             if alien.check_edges():
@@ -117,6 +134,13 @@ class AlienInvasion:
         for alien in self.aliens.sprites():
             alien.rect.y += self.settings.fleet_drop_speed
         self.settings.fleet_dir *= -1
+
+    def _check_aliens_bottom(self):
+        is_game_over = False
+        for alien in self.aliens.sprites():
+            if alien.rect.bottom >= self.settings.screen_height:
+                is_game_over = True
+        return is_game_over
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -143,24 +167,7 @@ class AlienInvasion:
             self.reset_sprites()
             pygame.mouse.set_visible(False)
 
-    def _update_bullets(self):
-        self.bullets.update()
-        for bullet in self.bullets.copy():
-            if bullet.rect.bottom <= 0:
-                self.bullets.remove(bullet)
-        self._check_bullet_alien_collision()
-
     def _check_bullet_alien_collision(self):
-        """pygame.sprite.groupcollide
-        takes in 4 arguments. 
-        1. a sprite groupe that might collide with something
-        2. a sprite groupe that the first groupe sprite might collide into
-        3. if the first sprite should diaper when colliding 
-        4. if the second sprite should diaper when colliding
-
-        this returns a dictionary where the first sprite groupe is the key 
-        and the second sprite groupe is the value
-        """
         collisions = pygame.sprite.groupcollide(
             self.bullets, self.aliens, False, True
         )
@@ -179,6 +186,16 @@ class AlienInvasion:
             self.stats.level += 1
             self.reset_sprites()
 
+    def _ship_hit(self):
+        if self.stats.lives > 0:
+            sleep(0.5)
+            self.stats.lives -= 1
+            self.reset_sprites()
+            sleep(0.5)
+        else:
+            self.game_active = False
+            pygame.mouse.set_visible(True)
+
     def reset_sprites(self):
         self.sb.prep_images()
         self.bullets.empty()
@@ -187,31 +204,7 @@ class AlienInvasion:
         self.ship.center_ship()
         self._create_fleet()
         self._generate_power_ups()
-        
 
-    def _fire_bullet(self):
-        if self.ship.number_of_ever_bullets > 0:
-            self.ship.number_of_ever_bullets -=1
-        if len(self.bullets) < self.settings.bullets_allowed:
-            new_bullet = Bullet(self)
-            if self.ship.number_of_ever_bullets > 0:
-                new_bullet = EverBullet(self)
-            self.bullets.add(new_bullet)
-
-    def _create_fleet(self):
-        grid = Alien(self).generate_fleet_grid()
-        for pos in grid:
-            self._create_alien(pos['x'], pos['y'])
-        for x in self.stats.get_caped_level_list():
-            ufo = Ufo(self)
-            ufo.x = 10 + x * (ufo.rect.width + 10)
-            self.aliens.add(ufo)
-
-    def _create_alien(self, x, y):
-        new_alien = Alien(self, x, y)
-        new_alien.x = x
-        self.aliens.add(new_alien)
-        
 
 if __name__ == '__main__':
     ai = AlienInvasion()

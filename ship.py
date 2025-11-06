@@ -17,6 +17,7 @@ class Ship(Sprite):
         self.moving_right = False
         self.moving_left = False
         self.number_of_ever_bullets = 0
+        self.number_of_shields = 0
     
     def blitme(self):
         self.screen.blit(self.image, self.rect)
