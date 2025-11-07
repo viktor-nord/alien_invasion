@@ -29,8 +29,14 @@ hurt_2 = get_image(hurt_image, 2, 79, 69)
 hurt_3 = get_image(hurt_image, 3, 79, 69)
 hurt = [hurt_0, hurt_1, hurt_2, hurt_3]
 
+frame_list = {
+    'idle': idle,
+    'fly': fly,
+    'hurt': hurt,
+}
+
 class Boss(Sprite):
-    def __init__(self, game):
+    def __init__(self, game, action='idle'):
         super().__init__()
         self.screen = game.screen
         sprite_size = (64, 64)
@@ -38,23 +44,23 @@ class Boss(Sprite):
         self.sprite_height = 69
         self.sprite_surface = pygame.Surface((64,64))
         self.timer = 0
-        self.frames = idle
+        self.frames = frame_list[action]
 
-    def show_boss(self):
-        if self.timer <= 20:
+    def show_boss(self, action):
+        self.frames = frame_list[action]
+        new_action = action
+        if self.timer <= 10:
             frame = self.frames[0]
-        elif self.timer <= 40:
+        elif self.timer <= 20:
             frame = self.frames[1]
-        elif self.timer <= 60:
+        elif self.timer <= 30:
             frame = self.frames[2]
-        elif self.timer <= 80:
+        elif self.timer <= 40:
             frame = self.frames[3]
         else:
             self.timer = 0
+            new_action = 'idle'
             frame = self.frames[0]
-            if self.frames == idle:
-                self.frames = hurt
-            else:
-                self.frames = idle
         self.timer += 1
         self.screen.blit(frame, (0,0))
+        return new_action

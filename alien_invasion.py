@@ -33,7 +33,9 @@ class AlienInvasion:
         self._create_fleet()
         self.play_button = Button(self, "Play")
         self.sb = Scoreboard(self)
-        self.boss = Boss(self)
+        self.boss_action = 'idle'
+        self.boss = Boss(self, self.boss_action)
+
         
     def run_game(self):
         while True:
@@ -75,6 +77,7 @@ class AlienInvasion:
             self.screen.blit(img, (star['x'], star['y']))
 
     def _fire_bullet(self):
+        self.boss_action = 'hurt'
         eb, lb = self.ship.number_of_ever_bullets, self.ship.number_of_laser_bullets
         self.ship.number_of_ever_bullets = eb - 1 if eb > 0 else eb
         self.ship.number_of_laser_bullets = lb - 1 if lb > 0 else lb
@@ -97,7 +100,8 @@ class AlienInvasion:
         self.powerup.blitme()
         self.ship.blitme()
         self.sb.show_score()
-        self.boss.show_boss()
+        self.boss_action = self.boss.show_boss(self.boss_action)
+        #self.boss.show_boss('idle')
         if not self.game_active:
             self.play_button.draw_button()
         pygame.display.flip()
