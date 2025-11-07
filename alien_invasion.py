@@ -11,6 +11,7 @@ from game_stats import GameStats
 from button import Button
 from scoreboard import Scoreboard
 from power_ups import Powerups, power_up_types
+from boss import Boss
 
 class AlienInvasion:
     def __init__(self):
@@ -32,6 +33,7 @@ class AlienInvasion:
         self._create_fleet()
         self.play_button = Button(self, "Play")
         self.sb = Scoreboard(self)
+        self.boss = Boss(self)
         
     def run_game(self):
         while True:
@@ -40,12 +42,12 @@ class AlienInvasion:
                 self.ship.update()
                 self._update_powerups()
                 self._update_bullets()
-                self._update_aliens()
+#                self._update_aliens()
                 self.clock.tick(60)
             self._update_screen()
 
     # Create
-    def _create_fleet(self):
+    def _create_fleet(self): 
         grid = Alien(self).generate_fleet_grid()
         for pos in grid:
             self._create_alien(pos['x'], pos['y'])
@@ -73,16 +75,15 @@ class AlienInvasion:
             self.screen.blit(img, (star['x'], star['y']))
 
     def _fire_bullet(self):
-        if self.ship.number_of_ever_bullets > 0:
-            self.ship.number_of_ever_bullets -=1
-        if self.ship.number_of_laser_bullets > 0:
-            self.ship.number_of_laser_bullets -=1
+        eb, lb = self.ship.number_of_ever_bullets, self.ship.number_of_laser_bullets
+        self.ship.number_of_ever_bullets = eb - 1 if eb > 0 else eb
+        self.ship.number_of_laser_bullets = lb - 1 if lb > 0 else lb
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
-            if self.ship.number_of_ever_bullets > 0:
+            if eb > 0:
                 self.ship.number_of_laser_bullets = 0
                 new_bullet = EverBullet(self)
-            if self.ship.number_of_laser_bullets > 0:
+            if lb > 0:
                 self.ship.number_of_ever_bullets = 0
                 new_bullet = LaserBullet(self)
             self.bullets.add(new_bullet)
@@ -96,6 +97,7 @@ class AlienInvasion:
         self.powerup.blitme()
         self.ship.blitme()
         self.sb.show_score()
+        self.boss.show_boss()
         if not self.game_active:
             self.play_button.draw_button()
         pygame.display.flip()
@@ -103,8 +105,10 @@ class AlienInvasion:
     def _update_powerups(self):
         if self.ship.rect.colliderect(self.powerup.rect):
             if self.powerup.type == 'ever_bullet':
+                self.ship.number_of_laser_bullets = 0
                 self.ship.number_of_ever_bullets = 5
             if self.powerup.type == 'laser':
+                self.ship.number_of_ever_bullets = 0
                 self.ship.number_of_laser_bullets = 5
             if self.powerup.type == 'shield':
                 self.ship.number_of_shields = 1
@@ -202,13 +206,13 @@ class AlienInvasion:
 
     def _handle_laser_hit(self, aliens):
         for alien in self.aliens.copy():
-            right = alien.rect.x == aliens[0].rect.x + (aliens[0].rect.width * 2) and alien.rect.y == aliens[0].rect.y
-            left = alien.rect.x == aliens[0].rect.x - (aliens[0].rect.width * 2) and alien.rect.y == aliens[0].rect.y
-            down = alien.rect.y == aliens[0].rect.y + (aliens[0].rect.height * 2) and alien.rect.x == aliens[0].rect.x
-            up = alien.rect.y == aliens[0].rect.y - (aliens[0].rect.height * 2) and alien.rect.x == aliens[0].rect.x
+            a, b = alien.rect, aliens[0].rect
+            right = a.x == b.x + (b.width * 2) and a.y == b.y
+            left = a.x == b.x - (b.width * 2) and a.y == b.y
+            down = a.y == b.y + (b.height * 2) and a.x == b.x
+            up = a.y == b.y - (b.height * 2) and a.x == b.x
             if right or left or down or up:
                 self.aliens.remove(alien)
-
 
     def _ship_hit(self):
         if self.stats.lives > 0:
