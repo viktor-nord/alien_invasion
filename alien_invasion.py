@@ -31,10 +31,11 @@ class AlienInvasion:
         self.aliens = pygame.sprite.Group()
         self._generate_power_ups()
         self._create_fleet()
-        self.play_button = Button(self, "Play")
+        self.play_button_text = 'Play'
+        self.play_button = Button(self, self.play_button_text)
         self.sb = Scoreboard(self)
         self.boss_action = 'idle'
-        self.boss = Boss(self, self.boss_action)
+        self.boss = Boss(self)
 
         
     def run_game(self):
@@ -44,19 +45,22 @@ class AlienInvasion:
                 self.ship.update()
                 self._update_powerups()
                 self._update_bullets()
-#                self._update_aliens()
-                self.clock.tick(60)
+                self._update_aliens()
+            self.clock.tick(60)
             self._update_screen()
 
     # Create
     def _create_fleet(self): 
-        grid = Alien(self).generate_fleet_grid()
-        for pos in grid:
-            self._create_alien(pos['x'], pos['y'])
-        for x in self.stats.get_caped_level_list():
-            ufo = Ufo(self)
-            ufo.x = 10 + x * (ufo.rect.width + 10)
-            self.aliens.add(ufo)
+        if self.stats.level == 10:
+            self.boss.boss_status = 'active'
+        else:
+            grid = Alien(self).generate_fleet_grid()
+            for pos in grid:
+                self._create_alien(pos['x'], pos['y'])
+                for x in self.stats.get_caped_level_list():
+                    ufo = Ufo(self)
+                    ufo.x = 10 + x * (ufo.rect.width + 10)
+                    #self.aliens.add(ufo)
 
     def _create_alien(self, x, y):
         new_alien = Alien(self, x, y)
@@ -77,7 +81,6 @@ class AlienInvasion:
             self.screen.blit(img, (star['x'], star['y']))
 
     def _fire_bullet(self):
-        self.boss_action = 'hurt'
         eb, lb = self.ship.number_of_ever_bullets, self.ship.number_of_laser_bullets
         self.ship.number_of_ever_bullets = eb - 1 if eb > 0 else eb
         self.ship.number_of_laser_bullets = lb - 1 if lb > 0 else lb
@@ -100,8 +103,18 @@ class AlienInvasion:
         self.powerup.blitme()
         self.ship.blitme()
         self.sb.show_score()
-        self.boss_action = self.boss.show_boss(self.boss_action)
-        #self.boss.show_boss('idle')
+        if self.boss.boss_status != 'none':
+            self.boss_action = self.boss.show_boss(self.boss_action)
+            if self.boss.boss_status == 'done':
+                sleep(0.5)
+                self.play_button_text = 'Play Again'
+                self.reset_sprites()
+                self.game_active = False
+                pygame.mouse.set_visible(True)
+                self.boss.boss_status = 'none'
+                self.boss.timer = 0
+                self.boss.hp = self.boss.max_hp
+                self.boss_action = 'idle'
         if not self.game_active:
             self.play_button.draw_button()
         pygame.display.flip()
@@ -131,11 +144,13 @@ class AlienInvasion:
     def _update_aliens(self):
         self._check_fleet_edges()
         self.aliens.update()
-        collide = pygame.sprite.spritecollideany(self.ship, self.aliens)        
-        if collide and self.ship.number_of_shields > 0:
-            self.aliens.remove(collide)
-            self.ship.number_of_shields -= 1
-            collide = None
+        collide = pygame.sprite.spritecollideany(self.ship, self.aliens)
+        if collide:
+            if self.ship.number_of_shields > 0:
+                self.aliens.remove(collide)
+                self.ship.number_of_shields -= 1
+            else:
+                self._ship_hit()
         if self._check_aliens_bottom():
             self._ship_hit()
 
@@ -180,6 +195,7 @@ class AlienInvasion:
                 self._check_play_button(mouse_pos)
     
     def _check_play_button(self, pos):
+        self.play_button_text = 'Play'
         if self.play_button.rect.collidepoint(pos) and not self.game_active:
             self.settings.initialize_dynamic_settings()
             self.stats.reset_stats()
@@ -191,6 +207,15 @@ class AlienInvasion:
         collisions = pygame.sprite.groupcollide(
             self.bullets, self.aliens, False, True
         )
+        if self.boss.boss_status == 'active':
+            boss_collide = pygame.sprite.spritecollideany(self.boss, self.bullets)
+            if boss_collide:
+                self.bullets.remove(boss_collide)
+                if self.boss.hp > 0:
+                    self.boss.timer = 0
+                    self.boss_action = 'hurt'
+                    self.boss.hp -= 1
+            
         if collisions:
             for bullet, aliens in collisions.items():
                 if bullet.type == 'regular' or bullet.type == 'laser':
@@ -203,7 +228,7 @@ class AlienInvasion:
                 self.stats.score += points
             self.sb.prep_score()
             self.sb.check_high_score()
-        if not self.aliens:
+        if not self.aliens and self.stats.level != 10:
             self.settings.increase_speed()
             self.stats.level += 1
             self.reset_sprites()
@@ -228,7 +253,7 @@ class AlienInvasion:
             self.game_active = False
             pygame.mouse.set_visible(True)
 
-    def reset_sprites(self):
+    def reset_sprites(self): 
         self.sb.prep_images()
         self.bullets.empty()
         self.aliens.empty()
