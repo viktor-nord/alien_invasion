@@ -31,8 +31,7 @@ class AlienInvasion:
         self.aliens = pygame.sprite.Group()
         self._generate_power_ups()
         self._create_fleet()
-        self.play_button_text = 'Play'
-        self.play_button = Button(self, self.play_button_text)
+        self.play_button = Button(self, 'Play')
         self.sb = Scoreboard(self)
         self.boss_action = 'idle'
         self.boss = Boss(self)
@@ -109,7 +108,6 @@ class AlienInvasion:
             self.boss_action = self.boss.show_boss(self.boss_action)
             if self.boss.boss_status == 'done':
                 sleep(0.5)
-                self.play_button_text = 'Play Again'
                 self.reset_sprites()
                 self.game_active = False
                 pygame.mouse.set_visible(True)
@@ -197,7 +195,6 @@ class AlienInvasion:
                 self._check_play_button(mouse_pos)
     
     def _check_play_button(self, pos):
-        self.play_button_text = 'Play'
         if self.play_button.rect.collidepoint(pos) and not self.game_active:
             self.settings.initialize_dynamic_settings()
             self.stats.reset_stats()
