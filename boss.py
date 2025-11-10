@@ -24,15 +24,15 @@ class Boss(Sprite):
     def __init__(self, game):
         super().__init__()
         self.screen = game.screen
-        self.screen_rect = game.screen.get_rect()
-        sprite_size = (64, 64)
         self.sprite_width = 80
         self.sprite_height = 70
         self.x = 10
         self.y = 10
-        self.image = self.get_image(frame_list['idle']['img'], 0, 80, 70)
+        self.image = self.get_image(
+            frame_list['idle']['img'], 0, self.sprite_width, self.sprite_height
+        )
         self.rect = self.image.get_rect()
-        self.timer = 0
+        self.timer = 1
         self.max_hp = 10
         self.hp = self.max_hp
         self.boss_status = 'none'
@@ -56,14 +56,17 @@ class Boss(Sprite):
                 frame = 5
             elif self.timer <= 7 * spacing:
                 frame = 6
-                self.boss_status = 'done'
         else:
             self.timer = 0
             new_action = 'idle'
+        if action == 'death' and frame == 6:
+            self.boss_status = 'done'
         self.timer += 1
         image_path = frame_list[new_action]['img']
         if self.boss_status == 'active':
-            self.image = self.get_image(image_path, frame, 80, 70)
+            self.image = self.get_image(
+                image_path, frame, self.sprite_width, self.sprite_height
+            )
         self.screen.blit(self.image, (self.x,self.y))
         return new_action
 

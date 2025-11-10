@@ -218,15 +218,7 @@ class AlienInvasion:
             self.bullets, self.aliens, False, True
         )
         if self.boss.boss_status == 'active':
-            boss_collide = pygame.sprite.spritecollideany(self.boss, self.bullets)
-            if boss_collide:
-                self.bullets.remove(boss_collide)
-                if self.boss.hp > 0:
-                    self.boss.timer = 0
-                    self.boss_action = 'hurt'
-                    self.boss.hp -= 1
-                else:
-                    self.boss_action = 'death'
+            self._check_bullet_boss_collision()
         if collisions:
             for bullet, aliens in collisions.items():
                 if bullet.type == 'regular' or bullet.type == 'laser':
@@ -247,15 +239,29 @@ class AlienInvasion:
                 self.stats.level += 1
                 self.reset_sprites()
 
+    def _check_bullet_boss_collision(self):
+        boss_collide = pygame.sprite.spritecollideany(self.boss, self.bullets)
+        if boss_collide:
+            self.bullets.remove(boss_collide)
+            if self.boss.hp > 0:
+                self.boss.timer = 0
+                self.boss_action = 'hurt'
+                self.boss.hp -= 1
+            else:
+                self.boss_action = 'death'
+
     def _handle_laser_hit(self, aliens):
-        for alien in self.aliens.copy():
-            a, b = alien.rect, aliens[0].rect
-            right = a.x == b.x + (b.width * 2) and a.y == b.y
-            left = a.x == b.x - (b.width * 2) and a.y == b.y
-            down = a.y == b.y + (b.height * 2) and a.x == b.x
-            up = a.y == b.y - (b.height * 2) and a.x == b.x
-            if right or left or down or up:
-                self.aliens.remove(alien)
+        if self.boss.boss_status == 'active':
+            return
+        else:
+            for alien in self.aliens.copy():
+                a, b = alien.rect, aliens[0].rect
+                right = a.x == b.x + (b.width * 2) and a.y == b.y
+                left = a.x == b.x - (b.width * 2) and a.y == b.y
+                down = a.y == b.y + (b.height * 2) and a.x == b.x
+                up = a.y == b.y - (b.height * 2) and a.x == b.x
+                if right or left or down or up:
+                    self.aliens.remove(alien)
 
     def _ship_hit(self):
         if self.stats.lives > 0:
