@@ -57,10 +57,12 @@ class AlienInvasion:
             grid = Alien(self).generate_fleet_grid()
             for pos in grid:
                 self._create_alien(pos['x'], pos['y'])
-                for x in self.stats.get_caped_level_list():
+            for x in list(range(self.stats.level-1)):
+                if x % 2 == 0:
+                    print(x)
                     ufo = Ufo(self)
-                    ufo.x = 10 + x * (ufo.rect.width + 10)
-                    #self.aliens.add(ufo)
+                    ufo.x = 10 + x * ufo.rect.width
+                    self.aliens.add(ufo)
 
     def _create_alien(self, x, y):
         new_alien = Alien(self, x, y)

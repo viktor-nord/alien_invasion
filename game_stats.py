@@ -12,9 +12,4 @@ class GameStats:
     def reset_stats(self):
         self.lives = self.settings.lives
         self.score = 0
-        self.level = 9
-
-    def get_caped_level_list(self):
-        if self.level == 1:
-            return []
-        return list(range(10)) if self.level > 10 else list(range(self.level-1))
+        self.level = 1
