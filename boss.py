@@ -59,10 +59,10 @@ class Boss(Sprite):
                 self.boss_status = 'done'
         else:
             self.timer = 0
-            new_action = 'death' if self.hp == 0 else 'idle'
+            new_action = 'idle'
         self.timer += 1
         image_path = frame_list[new_action]['img']
-        if self.boss_status != 'done':
+        if self.boss_status == 'active':
             self.image = self.get_image(image_path, frame, 80, 70)
         self.screen.blit(self.image, (self.x,self.y))
         return new_action

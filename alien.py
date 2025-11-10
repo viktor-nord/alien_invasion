@@ -13,14 +13,18 @@ class Alien(Sprite):
         self.x = float(self.rect.x)
         self.type = 'alien'
     
-    def update(self):
-        self.x += self.settings.alien_speed * self.settings.fleet_dir
-        self.rect.x = self.x
+    def update(self, is_boss_alien):
+        if is_boss_alien:
+            self.rect.y += 1
+        else:
+            self.x += self.settings.alien_speed * self.settings.fleet_dir
+            self.rect.x = self.x
     
     def check_edges(self):
         return (self.rect.right >= self.screen.get_rect().right) or (self.rect.left <= 0)
 
     def generate_fleet_grid(self):
+        #return [{'x':100, 'y':100}] # for testing 
         grid = []
         alien_width, alien_height = self.rect.size
         fleet_width, fleet_height = alien_width, alien_height
@@ -43,7 +47,7 @@ class Ufo(Alien):
         self.bounce_height = 20
         self.velocity = self.bounce_height
 
-    def update(self):
+    def update(self, type):
         self.x += self.settings.alien_speed * self.direction
         self.rect.x = self.x
         self.rect.y += self.velocity
