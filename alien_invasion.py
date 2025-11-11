@@ -232,7 +232,7 @@ class AlienInvasion:
             self.sb.prep_score()
             self.sb.check_high_score()
         if not self.aliens:
-            if self.stats.level == 10:
+            if self.boss.boss_status == 'active':
                 self._create_boss_fleet()
             else:
                 self.settings.increase_speed()
